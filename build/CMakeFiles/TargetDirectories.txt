@@ -1,3 +1,0 @@
-/Users/braden/Documents/Programming/C/bittorrent-client/build/CMakeFiles/bittorrent-client.dir
-/Users/braden/Documents/Programming/C/bittorrent-client/build/CMakeFiles/edit_cache.dir
-/Users/braden/Documents/Programming/C/bittorrent-client/build/CMakeFiles/rebuild_cache.dir
