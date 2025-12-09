@@ -15,7 +15,9 @@ static void bencode_object_list_destroy(BencodeObject* object);
 static void bencode_object_dictionary_destroy(BencodeObject* object);
 
 BencodeObject* bencode_object_parse(u8* bencoded_string, usize bencoded_string_length, usize* bencoded_string_index) {
-	BencodeObject* object = NULL;
+	usize start_index = *bencoded_string_index;
+
+    BencodeObject* object = NULL;
 	switch (bencoded_string[*bencoded_string_index]) {
 		case 'i': object = bencode_object_integer_parse(bencoded_string, bencoded_string_length, bencoded_string_index); break; // integer
 		case 'l': object = bencode_object_list_parse(bencoded_string, bencoded_string_length, bencoded_string_index); break; // list
@@ -23,12 +25,16 @@ BencodeObject* bencode_object_parse(u8* bencoded_string, usize bencoded_string_l
 		default: object = bencode_object_string_parse(bencoded_string, bencoded_string_length, bencoded_string_index); break; // string
 	}
 
+	object->bencode_data_length = (*bencoded_string_index - start_index);
+	object->bencode_data = (u8*) malloc(sizeof(u8) * object->bencode_data_length);
+	memcpy(object->bencode_data, bencoded_string + start_index, object->bencode_data_length);
+
 	return object;
 }
 
 BencodeObject* bencode_object_dictionary_get(BencodeObject* dictionary, const char* key) {
-	for (usize i = 0; i < dictionary->dictionary_length; i++) {
-		if (memcmp(key, dictionary->dictionary[i].key->string, strlen(key)) == 0) {
+    for (usize i = 0; i < dictionary->dictionary_length; i++) {
+		if (strncmp(dictionary->dictionary[i].key->string, key, dictionary->dictionary[i].key->string_length) == 0) {
 			return dictionary->dictionary[i].value;
 		}
 	}
@@ -76,7 +82,9 @@ void bencode_object_print(BencodeObject* object) {
 }
 
 void bencode_object_destroy(BencodeObject* object) {
-	switch (object->type) {
+	free(object->bencode_data);
+
+    switch (object->type) {
 		case STRING: bencode_object_string_destroy(object); break;
 		case INTEGER: bencode_object_integer_destroy(object); break;
 		case LIST: bencode_object_list_destroy(object); break;
@@ -93,6 +101,7 @@ static BencodeObject* bencode_object_integer_parse(u8* bencoded_string, usize be
 
 	*bencoded_string_index += 1; // for 'i' in bencode_object_parse()
 
+	// find end of number
 	usize number_length = 0;
 	while (bencoded_string[*bencoded_string_index + number_length] != 'e') {
 		number_length++;
@@ -133,6 +142,7 @@ static BencodeObject* bencode_object_string_parse(u8* bencoded_string, usize ben
 		return NULL;
 	}
 
+	// find end of number
 	usize number_length = 0;
 	while (bencoded_string[*bencoded_string_index + number_length] != ':') {
 		number_length++;
@@ -148,7 +158,7 @@ static BencodeObject* bencode_object_string_parse(u8* bencoded_string, usize ben
 	memcpy(number_string, bencoded_string + *bencoded_string_index, number_length);
 	number_string[number_length] = '\0';
 
-	*bencoded_string_index += number_length + 1;
+	*bencoded_string_index += number_length + 1; // + 1 for ':'
 
 	char* end;
 	usize string_length = strtol(number_string, &end, 10);
@@ -189,6 +199,7 @@ static BencodeObject* bencode_object_list_parse(u8* bencoded_string, usize benco
 	object->list_length = 0;
 	object->list = NULL;
 
+	// realloc is kinda slow sooooo maybe do this another way
 	while (bencoded_string[*bencoded_string_index] != 'e') {
 		BencodeObject** temp = (BencodeObject**) realloc(object->list, sizeof(BencodeObject*) * (object->list_length + 1));
 		if (!temp) {

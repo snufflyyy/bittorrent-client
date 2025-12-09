@@ -1,6 +1,7 @@
 #include "utils/url.h"
 
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 URLSplitResult url_split(const char* url) {
@@ -44,4 +45,22 @@ URLSplitResult url_split(const char* url) {
 	}
 
 	return result;
+}
+
+/* MUST BE FREED */
+char* url_encode(u8* bytes, usize bytes_length) {
+    usize string_length = (bytes_length * (sizeof(char) * 3));
+    char* string = (char*) malloc(sizeof(char) * (string_length + 1));
+    if (!string) {
+        fprintf(stderr, "[ERROR] [URL] Failed to allocate memory for string!\n");
+        return NULL;
+    }
+
+    char* position = string;
+    for (usize i = 0; i < bytes_length; i++) {
+        position += snprintf(position, string_length, "%%%02x", bytes[i]);
+    }
+
+    *position = '\0';
+    return string;
 }

@@ -1,5 +1,6 @@
 #include "metadata.h"
 
+#include <openssl/sha.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,10 +10,17 @@
 #include "bencode.h"
 
 TorrentMetadata* torrent_metadata_create(const char* filename) {
-	usize bencode_length;
+    TorrentMetadata* metadata = (TorrentMetadata*) malloc(sizeof(TorrentMetadata));
+	if (!metadata) {
+		fprintf(stderr, "[ERROR] [METADATA] Failed to allocate memory for torrent metadata!\n");
+		return NULL;
+	}
+
+    usize bencode_length = 0;
 	u8* bencode = file_to_byte_array(filename, &bencode_length);
 	if (!bencode) {
 		fprintf(stderr, "[ERROR] [METADATA] Failed to open torrent file: %s\n", filename);
+		free(metadata);
 		return NULL;
 	}
 
@@ -21,24 +29,19 @@ TorrentMetadata* torrent_metadata_create(const char* filename) {
 	if (!bencoded_metadata) {
 		fprintf(stderr, "[ERROR] [METADATA] Failed to parse bencoded torrent metadata from file: %s\n", filename);
 		free((void*) bencode);
+		free(metadata);
 		return NULL;
 	}
 
 	free((void*) bencode);
 
-	TorrentMetadata* metadata = (TorrentMetadata*) malloc(sizeof(TorrentMetadata));
-	if (!metadata) {
-		fprintf(stderr, "[ERROR] [METADATA] Failed to allocate memory for torrent metadata!\n");
-		bencode_object_destroy(bencoded_metadata);
-		return NULL;
-	}
-
 	BencodeObject* bencoded_announce = bencode_object_dictionary_get(bencoded_metadata, "announce");
+
 	metadata->announce = (char*) malloc(sizeof(char) * (bencoded_announce->string_length + 1));
 	if (!metadata->announce) {
 		fprintf(stderr, "[ERROR] [METADATA] Failed to allocate memory for announce string!\n");
-		free(metadata);
 		bencode_object_destroy(bencoded_metadata);
+		free(metadata);
 		return NULL;
 	}
 
@@ -46,21 +49,25 @@ TorrentMetadata* torrent_metadata_create(const char* filename) {
 	metadata->announce[bencoded_announce->string_length] = '\0';
 
 	BencodeObject* bencoded_info = bencode_object_dictionary_get(bencoded_metadata, "info");
+
+	SHA1(bencoded_info->bencode_data, bencoded_info->bencode_data_length, metadata->info_sha1);
+
 	BencodeObject* bencoded_name = bencode_object_dictionary_get(bencoded_info, "name");
 	BencodeObject* bencoded_length = bencode_object_dictionary_get(bencoded_info, "length");
 	BencodeObject* bencoded_piece_length = bencode_object_dictionary_get(bencoded_info, "piece length");
 	BencodeObject* bencoded_pieces = bencode_object_dictionary_get(bencoded_info, "pieces");
 
-	metadata->info.name = (char*) malloc(sizeof(char) * bencoded_name->string_length);
+	metadata->info.name = (char*) malloc(sizeof(char) * bencoded_name->string_length + 1);
 	if (!metadata->announce) {
 		fprintf(stderr, "[ERROR] [METADATA] Failed to allocate memory for announce string!\n");
 		free(metadata->announce);
-		free(metadata);
 		bencode_object_destroy(bencoded_metadata);
+		free(metadata);
 		return NULL;
 	}
 
 	memcpy(metadata->info.name, bencoded_name->string, bencoded_name->string_length);
+	metadata->info.name[bencoded_name->string_length] = '\0';
 
 	metadata->info.length = bencoded_length->number;
 	metadata->info.piece_length = bencoded_piece_length->number;
@@ -70,8 +77,8 @@ TorrentMetadata* torrent_metadata_create(const char* filename) {
 		fprintf(stderr, "[ERROR] [METADATA] Failed to allocate memory for piece strings!\n");
 		free(metadata->info.name);
 		free(metadata->announce);
-		free(metadata);
 		bencode_object_destroy(bencoded_metadata);
+		free(metadata);
 		return NULL;
 	}
 
@@ -82,12 +89,14 @@ TorrentMetadata* torrent_metadata_create(const char* filename) {
 			free(metadata->info.pieces);
 			free(metadata->info.name);
 			free(metadata->announce);
-			free(metadata);
 			bencode_object_destroy(bencoded_metadata);
+			free(metadata);
 		}
 
 		memcpy(metadata->info.pieces[i], bencoded_pieces->string + (i * 20), 20);
 	}
+
+	bencode_object_destroy(bencoded_metadata);
 
 	return metadata;
 }

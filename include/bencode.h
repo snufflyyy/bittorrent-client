@@ -16,6 +16,8 @@ typedef struct BencodeObjectKeyValue {
 
 typedef struct BencodeObject {
 	BencodeObjectType type;
+	u8* bencode_data;
+	usize bencode_data_length;
 
 	u8* string;
 	usize string_length;
@@ -28,6 +30,5 @@ typedef struct BencodeObject {
 
 BencodeObject* bencode_object_parse(u8* bencoded_string, usize bencoded_string_length, usize* bencoded_string_index);
 BencodeObject* bencode_object_dictionary_get(BencodeObject* dictionary, const char* key);
-const char* bencode_object_dictionary_export(BencodeObject* dictionary);
 void bencode_object_print(BencodeObject* object);
 void bencode_object_destroy(BencodeObject* object);

@@ -17,8 +17,11 @@ add_executable(
 	src/utils/file.c
 	src/utils/url.c
 
-	src/metadata.c
 	src/bencode.c
+	src/metadata.c
+	src/tracker.c
+	src/peer.c
+	src/downloader.c
 )
 
 target_link_libraries(${PROJECT_NAME} OpenSSL::Crypto OpenSSL::SSL)
