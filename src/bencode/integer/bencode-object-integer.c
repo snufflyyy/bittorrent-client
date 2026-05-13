@@ -70,7 +70,7 @@ BencodeObjectInteger* bencode_object_integer_parse(u8* bencode_data, u32 bencode
 }
 
 void bencode_object_integer_print(BencodeObjectInteger* integer) {
-	printf("integer: %d\n", integer->integer);
+	printf("%d", integer->integer);
 }
 
 void bencode_object_integer_destroy(BencodeObjectInteger* integer) {

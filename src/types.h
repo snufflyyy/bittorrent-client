@@ -8,6 +8,7 @@ typedef uint16_t u16;
 typedef uint32_t u32;
 typedef uint64_t u64;
 typedef size_t usize;
+#define USIZE_MAX SIZE_MAX
 
 typedef int8_t i8;
 typedef int16_t i16;

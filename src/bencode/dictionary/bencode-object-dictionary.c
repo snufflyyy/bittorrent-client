@@ -1,5 +1,6 @@
 #include "bencode/dictionary/bencode-object-dictionary.h"
 #include "bencode/bencode-object.h"
+#include "bencode/byte-string/bencode-object-byte-string.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,12 +64,15 @@ BencodeObjectDictionary* bencode_object_dictionary_parse(u8* bencode_data, u32 b
 }
 
 void bencode_object_dictionary_print(BencodeObjectDictionary* dictionary) {
-	printf("dictionary elements: \n");
+	printf("{\n");
 	for (usize i = 0; i < dictionary->elements_length; i++) {
-		bencode_object_byte_string_print(dictionary->elements[i].key);
-		bencode_object_print(dictionary->elements[i].value);
+		printf("\t");
+		bencode_object_byte_string_print((dictionary->elements[i].key));
+		printf(": ");
+		bencode_object_print((BencodeObject*) dictionary->elements[i].value);
+		printf("\n");
 	}
-	printf("dictionary length: %u\n", dictionary->elements_length);
+	printf("}\n");
 }
 
 void bencode_object_dictionary_destroy(BencodeObjectDictionary* dictionary) {

@@ -63,11 +63,14 @@ BencodeObjectList* bencode_object_list_parse(u8* bencode_data, u32 bencode_data_
 }
 
 void bencode_object_list_print(BencodeObjectList* list) {
-	printf("list elements: \n");
+	printf("[ ");
 	for (usize i = 0; i < list->elements_length; i++) {
 		bencode_object_print(list->elements[i]);
+		if (i < list->elements_length - 1) {
+			printf(", ");
+		}
 	}
-	printf("list length: %u\n", list->elements_length);
+	printf(" ]");
 }
 
 void bencode_object_list_destroy(BencodeObjectList* list) {

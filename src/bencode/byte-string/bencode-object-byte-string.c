@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "bencode/bencode-object.h"
+#include "types.h"
 
 BencodeObjectByteString* bencode_object_byte_string_parse(u8* bencode_data, u32 bencode_data_length, usize* i) {
 	BencodeObjectByteString* bencode_byte_string = (BencodeObjectByteString*) malloc(sizeof(BencodeObjectByteString));
@@ -18,6 +19,12 @@ BencodeObjectByteString* bencode_object_byte_string_parse(u8* bencode_data, u32 
 	// find length of string size number
 	usize string_length_string_length = 0;
 	while (bencode_data[*i + string_length_string_length] != ':') {
+		if (string_length_string_length >= 100) {
+			fprintf(stderr, "[ERROR] [Bencode] [String] Failed to get byte string length!\n");
+			free(bencode_byte_string);
+			return NULL;
+		}
+
 		string_length_string_length++;
 	}
 
@@ -45,11 +52,15 @@ BencodeObjectByteString* bencode_object_byte_string_parse(u8* bencode_data, u32 
 
 	free(string_length_string);
 
-	u8* byte_string = (u8*) malloc(sizeof(u8) * string_length);
-	if (!byte_string) {
-		fprintf(stderr, "[ERROR] [Bencode] [String] Failed to allocate memory for byte string!\n");
-		free(bencode_byte_string);
-		return NULL;
+	u8* byte_string = NULL;
+
+	if (string_length >= 0) {
+		byte_string = (u8*) malloc(sizeof(u8) * string_length);
+		if (!byte_string) {
+			fprintf(stderr, "[ERROR] [Bencode] [String] Failed to allocate memory for byte string!\n");
+			free(bencode_byte_string);
+			return NULL;
+		}
 	}
 
 	memcpy(byte_string, bencode_data + *i, string_length);
@@ -82,12 +93,11 @@ BencodeObjectByteString* bencode_object_byte_string_parse(u8* bencode_data, u32 
 }
 
 void bencode_object_byte_string_print(BencodeObjectByteString* byte_string) {
-	printf("byte string: ");
+	printf("\"");
 	for (usize i = 0; i < byte_string->byte_string_length; i++) {
 		printf("%c", byte_string->byte_string[i]);
 	}
-	printf("\n");
-	printf("byte string length: %u\n", byte_string->byte_string_length);
+	printf("\"");
 }
 
 void bencode_object_byte_string_destroy(BencodeObjectByteString* byte_string) {
