@@ -38,22 +38,22 @@ BencodeObjectList* bencode_object_list_parse(u8* bencode_data, u32 bencode_data_
 
 	usize i_end = *i;
 
-	u8 bencode_byte_string_bencode_data_length = i_end - i_start;
-	u8* bencode_byte_string_bencode_data = (u8*) malloc(sizeof(u8) * bencode_byte_string_bencode_data_length);
-	if (!bencode_byte_string_bencode_data) {
-		fprintf(stderr, "[ERROR] [Bencode] [Integer] Failed to allocate memory for integer bencode data!\n");
+	usize bencode_list_bencode_data_length = i_end - i_start;
+	u8* bencode_list_bencode_data = (u8*) malloc(sizeof(u8) * bencode_list_bencode_data_length);
+	if (!bencode_list_bencode_data) {
+		fprintf(stderr, "[ERROR] [Bencode] [List] Failed to allocate memory for list bencode data!\n");
 
 		free(bencode_list);
 		return NULL;
 	}
 
-	memcpy(bencode_byte_string_bencode_data, bencode_data + i_start, i_end - i_start);
+	memcpy(bencode_list_bencode_data, bencode_data + i_start, i_end - i_start);
 
 	*bencode_list = (BencodeObjectList) {
 		.object = (BencodeObject) {
 			.type = BENCODE_OBJECT_TYPE_LIST,
-			.bencode_data = bencode_byte_string_bencode_data,
-			.bencode_data_length = bencode_byte_string_bencode_data_length,
+			.bencode_data = bencode_list_bencode_data,
+			.bencode_data_length = bencode_list_bencode_data_length,
 		},
 		.elements = elements,
 		.elements_length = elements_length

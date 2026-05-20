@@ -1,6 +1,7 @@
 #include "bencode/dictionary/bencode-object-dictionary.h"
 #include "bencode/bencode-object.h"
 #include "bencode/byte-string/bencode-object-byte-string.h"
+#include "types.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,28 +40,38 @@ BencodeObjectDictionary* bencode_object_dictionary_parse(u8* bencode_data, u32 b
 
 	usize i_end = *i;
 
-	u8 bencode_byte_string_bencode_data_length = i_end - i_start;
-	u8* bencode_byte_string_bencode_data = (u8*) malloc(sizeof(u8) * bencode_byte_string_bencode_data_length);
-	if (!bencode_byte_string_bencode_data) {
+	usize bencode_dictionary_bencode_data_length = i_end - i_start;
+	u8* bencode_dictionary_bencode_data = (u8*) malloc(sizeof(u8) * bencode_dictionary_bencode_data_length);
+	if (!bencode_dictionary_bencode_data) {
 		fprintf(stderr, "[ERROR] [Bencode] [elements_length] Failed to allocate memory for dictionary's bencode data!\n");
 
 		free(bencode_dictionary);
 		return NULL;
 	}
 
-	memcpy(bencode_byte_string_bencode_data, bencode_data + i_start, i_end - i_start);
+	memcpy(bencode_dictionary_bencode_data, bencode_data + i_start, i_end - i_start);
 
 	*bencode_dictionary = (BencodeObjectDictionary) {
 		.object = (BencodeObject) {
 			.type = BENCODE_OBJECT_TYPE_DICTIONARY,
-			.bencode_data = bencode_byte_string_bencode_data,
-			.bencode_data_length = bencode_byte_string_bencode_data_length,
+			.bencode_data = bencode_dictionary_bencode_data,
+			.bencode_data_length = bencode_dictionary_bencode_data_length,
 		},
 		.elements = elements,
 		.elements_length = elements_length
 	};
 
 	return bencode_dictionary;
+}
+
+BencodeObject* bencode_object_dictionary_get(BencodeObjectDictionary* dictionary, const char* key) {
+	for (usize i = 0; i < dictionary->elements_length; i++) {
+		if (memcmp(dictionary->elements[i].key->byte_string, key, dictionary->elements[i].key->byte_string_length) == 0) {
+			return dictionary->elements[i].value;
+		}
+	}
+
+	return NULL;
 }
 
 void bencode_object_dictionary_print(BencodeObjectDictionary* dictionary) {

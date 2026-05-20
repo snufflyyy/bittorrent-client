@@ -21,6 +21,8 @@ add_executable(
 	src/bencode/integer/bencode-object-integer.c
 	src/bencode/list/bencode-object-list.c
 	src/bencode/dictionary/bencode-object-dictionary.c
+
+	src/metadata/metadata.c
 )
 
 target_link_libraries(${PROJECT_NAME} OpenSSL::Crypto)

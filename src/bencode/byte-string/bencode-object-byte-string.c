@@ -68,7 +68,7 @@ BencodeObjectByteString* bencode_object_byte_string_parse(u8* bencode_data, u32 
 
 	usize i_end = *i;
 
-	u8 bencode_byte_string_bencode_data_length = i_end - i_start;
+	usize bencode_byte_string_bencode_data_length = i_end - i_start;
 	u8* bencode_byte_string_bencode_data = (u8*) malloc(sizeof(u8) * bencode_byte_string_bencode_data_length);
 	if (!bencode_byte_string_bencode_data) {
 		fprintf(stderr, "[ERROR] [Bencode] [String] Failed to allocate memory for byte string bencode data!\n");
@@ -93,6 +93,8 @@ BencodeObjectByteString* bencode_object_byte_string_parse(u8* bencode_data, u32 
 }
 
 void bencode_object_byte_string_print(BencodeObjectByteString* byte_string) {
+	if (byte_string->byte_string_length >= 100) { return; }
+
 	printf("\"");
 	for (usize i = 0; i < byte_string->byte_string_length; i++) {
 		printf("%c", byte_string->byte_string[i]);

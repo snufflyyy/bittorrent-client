@@ -1,27 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "file/file.h"
-#include "bencode/bencode-object.h"
+#include <metadata/metadata.h>
 
 int main() {
-	u32 bencode_data_length = 0;
-	u8* bencode_data = file_to_byte_array("resources/example.torrent", &bencode_data_length);
-	if (!bencode_data) {
-		fprintf(stderr, "[ERROR] Failed to get bencode data from file!\n");
+	TorrentMetadata* torrent_metadata = torrent_metadata_create("resources/big-buck-bunny.torrent");
+	if (!torrent_metadata) {
+		fprintf(stderr, "[ERROR] Failed to create torrent metadata!\n");
 		return -1;
 	}
 
-	BencodeObject* object = bencode_object_parse(bencode_data, bencode_data_length);
-	if (!object) {
-		fprintf(stderr, "[ERROR] Failed to parse bencode!\n");
-		free(bencode_data);
-		return -1;
-	}
+	printf("\n");
+	torrent_metadata_print(torrent_metadata);
 
-	bencode_object_print(object);
-
-	bencode_object_destroy(object);
-	free(bencode_data);
-	return 0;
+	torrnet_metadata_destroy(torrent_metadata);
 }

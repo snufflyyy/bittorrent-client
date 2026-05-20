@@ -47,21 +47,21 @@ BencodeObjectInteger* bencode_object_integer_parse(u8* bencode_data, u32 bencode
 
 	usize i_end = *i;
 
-	u8 bencode_byte_string_bencode_data_length = i_end - i_start;
-	u8* bencode_byte_string_bencode_data = (u8*) malloc(sizeof(u8) * bencode_byte_string_bencode_data_length);
-	if (!bencode_byte_string_bencode_data) {
+	usize bencode_integer_bencode_data_length = i_end - i_start;
+	u8* bencode_integer_bencode_data = (u8*) malloc(sizeof(u8) * bencode_integer_bencode_data_length);
+	if (!bencode_integer_bencode_data) {
 		fprintf(stderr, "[ERROR] [Bencode] [Integer] Failed to allocate memory for integer bencode data!\n");
 		free(bencode_integer);
 		return NULL;
 	}
 
-	memcpy(bencode_byte_string_bencode_data, bencode_data + i_start, i_end - i_start);
+	memcpy(bencode_integer_bencode_data, bencode_data + i_start, i_end - i_start);
 
 	*bencode_integer = (BencodeObjectInteger) {
 		.object = (BencodeObject) {
 			.type = BENCODE_OBJECT_TYPE_INTEGER,
-			.bencode_data = bencode_byte_string_bencode_data,
-			.bencode_data_length = bencode_byte_string_bencode_data_length,
+			.bencode_data = bencode_integer_bencode_data,
+			.bencode_data_length = bencode_integer_bencode_data_length,
 		},
 		.integer = integer,
 	};
